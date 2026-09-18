@@ -1,53 +1,33 @@
 # SYNERGY TradeMux
 
-**Venue-neutral execution fabric with smart routing, split execution and reconciliation evidence**
+> **Venue-neutral execution fabric with smart routing, split execution and reconciliation evidence**
 
-Version: `2.0.0` · Python 3.11+ · REST API · Docker · CI · automated tests
+**Enterprise v2.0.0** · Python 3.11+ · FastAPI/OpenAPI · Docker/Compose · RBAC/JWT · PostgreSQL/ClickHouse audit
 
-## Why this exists
-One strategy often requires different broker/exchange adapters, routing logic and reconciliation.
+**Designed for:** Brokers, crypto venues, prop firms, market makers and multi-venue trading teams  
+**Primary planning endpoint:** `POST /enterprise/v1/execution/plan`  
+**Live dispatch:** `POST /enterprise/v1/execution/dispatch` — operator-only and environment-gated
 
-## Commercial buyer
-Brokers, crypto venues, prop firms, market makers and multi-venue trading teams.
+> [!IMPORTANT]
+> Execution infrastructure only. No promise of fills, cost improvement or profit. Live capital requires customer venue certification and Trading/Risk/Ops/Security approval.
 
-## Core guarantee
-The software guarantees deterministic interface behavior covered by tests. **It does not guarantee trading profit.** Live-market deployment requires customer-specific OOS validation, fees/spread/slippage/latency/capacity modelling, security review and legal/compliance approval.
+## Institutional package
+- smart routing and split-execution core;
+- tenant RBAC, request-ID audit and metrics;
+- Bybit V5, CCXT and MetaTrader 5 integration contracts;
+- live execution disabled by default;
+- Docker/Compose, tests, load harnesses and customer-pilot docs.
+
+## Verification
+**20 tests passed** · health smoke **80/80 200** · local health p95 **103.4 ms** (~452 req/s). Smoke only, not an execution benchmark.
 
 ## Quick start
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[dev]'
+pip install -e '.[dev,enterprise]'
 pytest -q
 python -m synergy_trademux.api
 ```
+Open `/docs`.
 
-Then open `http://localhost:8000/docs`.
-
-## Commercial package
-- standalone installable Python package;
-- versioned FastAPI boundary;
-- deterministic reference core;
-- Dockerfile and GitHub Actions CI;
-- sales one-pager, security boundary, deployment notes and provenance;
-- proprietary evaluation licence ready for a paid pilot.
-
-## Research lineage
-MQL5 TradeMux REST / Quant Backbone lineage; Shtenco/synergy_pay_system routing and settlement architecture
-
-See `docs/PRODUCT_STATUS.md`, `docs/SALES_ONE_PAGER.md`, `docs/SECURITY.md` and `docs/PROVENANCE.md`.
-
-## Enterprise v2.0.0
-
-The repository now includes a separate enterprise boundary around the product core:
-
-- JWT/RBAC roles (`viewer`, `researcher`, `trader`, `risk`, `operator`, `admin`);
-- request-id propagation and auditable product actions;
-- PostgreSQL and ClickHouse audit stores;
-- Bybit V5, CCXT multi-CEX and MetaTrader 5 adapters with live execution disabled by default;
-- retry/circuit breaker controls;
-- health and Prometheus-compatible metrics;
-- Docker Compose deployment reference;
-- deterministic synthetic customer dataset and HTTP/k6 load harnesses.
-
-See `docs/ENTERPRISE_ARCHITECTURE.md`, `docs/ENTERPRISE_DEPLOYMENT.md` and `docs/CUSTOMER_ACCEPTANCE.md` before any customer deployment.
+## CTO package
+[Due diligence](docs/CTO_DUE_DILIGENCE.md) · [Architecture](docs/ARCHITECTURE_DIAGRAMS.md) · [API](docs/API_EXAMPLES.md) · [Security](SECURITY.md) · [Benchmarks](docs/BENCHMARKS_AND_ACCEPTANCE.md) · [SLA/SLO](docs/SLA_SLO.md) · [Deployment](docs/DEPLOYMENT_CHECKLIST.md) · [Pilot](docs/CUSTOMER_PILOT.md)
