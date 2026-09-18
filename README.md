@@ -2,6 +2,8 @@
 
 > **Venue-neutral execution fabric with smart routing, split execution and reconciliation evidence**
 
+Version: `2.0.0`
+
 **Enterprise v2.0.0** · Python 3.11+ · FastAPI/OpenAPI · Docker/Compose · RBAC/JWT · PostgreSQL/ClickHouse audit
 
 **Designed for:** Brokers, crypto venues, prop firms, market makers and multi-venue trading teams  
