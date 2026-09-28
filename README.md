@@ -68,3 +68,70 @@ flowchart LR
 `GREEN` означает только воспроизводимо подтверждённый тезис. Гипотеза, benchmark без корректного протокола, архитектурная диаграмма или красивый экономический цикл сами по себе GREEN не дают.
 
 <!-- SYNERGY-FEDERATION-PASSPORT:END -->
+---
+
+# 🔀 Глубокая техническая спецификация TradeMux
+
+## 🎯 Проблема
+
+Даже корректный trade intent может испортиться на маршрутизации: split, partial fills, retries, duplicate submissions и inconsistent venue state.
+
+## 🏗️ Pipeline
+
+```mermaid
+flowchart LR
+    N0[Approved trade intent] --> N1[Venue normalization] --> N2[Route/split planner] --> N3[Idempotency gate] --> N4[Dispatch] --> N5[Fill aggregation] --> N6[Reconciliation evidence]
+```
+
+## 📥 Входы
+
+- approved intent;
+- venue credentials refs;
+- quotes/depth;
+- fees;
+- position state;
+- execution policy;
+
+## 📤 Выходы
+
+- execution plan;
+- venue child orders;
+- fill events;
+- partial/unfilled state;
+- reconciliation package;
+
+## 🛡️ Непереговорные инварианты
+
+```text
+dispatch requires approved intent
+idempotency key mandatory
+retry cannot duplicate economic order
+partial fills preserved explicitly
+reconciliation closes the lifecycle
+```
+
+## 🧪 Как ловить ложный GREEN
+
+- health/API throughput не использовать как доказательство market edge;
+- обязательны timestamp/state-version checks;
+- adversarial/negative fixtures должны проверять отказ;
+- сохранять полный request → decision → execution/evidence trace;
+- live claims отделять от local smoke и simulation;
+- cost/latency/failure assumptions должны быть явными.
+
+## 🔗 Контракт с соседями
+
+- [`synergy_riskguard`](https://github.com/Shtenco/synergy_riskguard)
+- [`synergy_market_graph`](https://github.com/Shtenco/synergy_market_graph)
+- [`synergy_midas_institutional`](https://github.com/Shtenco/synergy_midas_institutional)
+- [`synergy_financial_os`](https://github.com/Shtenco/synergy_financial_os)
+
+## 🚀 Следующий доказательный рубеж
+
+1. frozen acceptance fixtures;
+2. negative/adversarial suite;
+3. typed cross-repo schema;
+4. end-to-end trace ID;
+5. rollback/recovery evidence;
+6. documented failure-mode table;
+7. reproducible evidence bundle.
