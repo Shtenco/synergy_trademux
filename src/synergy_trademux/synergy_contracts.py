@@ -2,12 +2,32 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from .core import ExecutionPlan, Fill
+from .core import ExecutionPlan, Fill, VenueQuote, smart_route
 
 
 PLAN_CONTRACT_ID = "synergy.trading.execution-plan/v1"
 RESULT_CONTRACT_ID = "synergy.trading.execution-result/v1"
 AUTHORITY = "trade_execution"
+UPSTREAM_CONTRACT_ID = "synergy.trading.risk-decision/v1"
+
+
+def plan_from_risk_decision(
+    *,
+    risk_payload: dict[str, Any],
+    quotes: list[VenueQuote],
+    symbol: str,
+    side: str,
+    max_venues: int = 4,
+) -> ExecutionPlan:
+    action = str(risk_payload.get("action", "")).upper()
+    if action in {"REJECT", "KILL_SWITCH"}:
+        raise ValueError(f"risk decision forbids execution: {action}")
+    if action not in {"ALLOW", "RESIZE"}:
+        raise ValueError("unknown risk action")
+    approved = float(risk_payload.get("approved_notional", 0))
+    if approved <= 0:
+        raise ValueError("approved_notional must be positive")
+    return smart_route(approved, quotes, max_venues=max_venues)
 
 
 def execution_plan_payload(
