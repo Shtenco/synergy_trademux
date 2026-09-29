@@ -1,137 +1,266 @@
-# SYNERGY TradeMux
+# 🔀 SYNERGY TradeMux — verified technical dossier
 
-> **Venue-neutral execution fabric with smart routing, split execution and reconciliation evidence**
+> **Статус:** 🟡 CANDIDATE execution-planning layer.
+> **Проверено по фактическому `main`:** 29.09.2026.
+> **Authority:** trade execution boundary, но real broker fills не выводятся из paper adapter.
 
-Version: `2.0.0`
+## 1. 🎯 Задача
 
-**Enterprise v2.0.0** · Python 3.11+ · FastAPI/OpenAPI · Docker/Compose · RBAC/JWT · PostgreSQL/ClickHouse audit
+TradeMux получает canonical risk decision и строит bounded multi-venue execution plan по costs, latency и available notional.
 
-**Designed for:** Brokers, crypto venues, prop firms, market makers and multi-venue trading teams  
-**Primary planning endpoint:** `POST /enterprise/v1/execution/plan`  
-**Live dispatch:** `POST /enterprise/v1/execution/dispatch` — operator-only and environment-gated
-
-> [!IMPORTANT]
-> Execution infrastructure only. No promise of fills, cost improvement or profit. Live capital requires customer venue certification and Trading/Risk/Ops/Security approval.
-
-## Institutional package
-- smart routing and split-execution core;
-- tenant RBAC, request-ID audit and metrics;
-- Bybit V5, CCXT and MetaTrader 5 integration contracts;
-- live execution disabled by default;
-- Docker/Compose, tests, load harnesses and customer-pilot docs.
-
-## Verification
-**20 tests passed** · health smoke **80/80 200** · local health p95 **103.4 ms** (~452 req/s). Smoke only, not an execution benchmark.
-
-## Quick start
-```bash
-pip install -e '.[dev,enterprise]'
-pytest -q
-python -m synergy_trademux.api
-```
-Open `/docs`.
-
-## CTO package
-[Due diligence](docs/CTO_DUE_DILIGENCE.md) · [Architecture](docs/ARCHITECTURE_DIAGRAMS.md) · [API](docs/API_EXAMPLES.md) · [Security](SECURITY.md) · [Benchmarks](docs/BENCHMARKS_AND_ACCEPTANCE.md) · [SLA/SLO](docs/SLA_SLO.md) · [Deployment](docs/DEPLOYMENT_CHECKLIST.md) · [Pilot](docs/CUSTOMER_PILOT.md)
-
-
-<!-- SYNERGY-FEDERATION-PASSPORT:START -->
----
-
-## 🧭 SYNERGY federation passport
-
-**Домен:** 🔀 Trade routing / mux  
-**Архитектурный родитель:** [`synergy_midas_ai`](https://github.com/Shtenco/synergy_midas_ai)  
-**Архитектурный корень:** [`synergy_system`](https://github.com/Shtenco/synergy_system)
-
-```mermaid
-flowchart LR
-    SYS[🧭 synergy_system] --> P[synergy_midas_ai]
-    P --> THIS[synergy_trademux]
-    THIS --> E[📦 Evidence / outputs]
-```
-
-Архитектурная стрелка — это карта федерации, а не автоматически подтверждённая runtime dependency.
-
-### Единый стандарт
-
-Каждый проект должен документировать реальную проблему, реализацию, тесты, evidence, ограничения, file map, воспроизводимость, roadmap и границы утверждений. Это тот же принцип, который используется в `dlp_solver`.
-
-### Навигация
-
-- [📚 Атлас всех 75 репозиториев](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
-- [🧾 Машиночитаемый registry](https://github.com/Shtenco/synergy_system/blob/main/registry/SYNERGY_REPOSITORIES.json)
-- [🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system)
-
-### Evidence rule
-
-`GREEN` означает только воспроизводимо подтверждённый тезис. Гипотеза, benchmark без корректного протокола, архитектурная диаграмма или красивый экономический цикл сами по себе GREEN не дают.
-
-<!-- SYNERGY-FEDERATION-PASSPORT:END -->
----
-
-# 🔀 Глубокая техническая спецификация TradeMux
-
-## 🎯 Проблема
-
-Даже корректный trade intent может испортиться на маршрутизации: split, partial fills, retries, duplicate submissions и inconsistent venue state.
-
-## 🏗️ Pipeline
-
-```mermaid
-flowchart LR
-    N0[Approved trade intent] --> N1[Venue normalization] --> N2[Route/split planner] --> N3[Idempotency gate] --> N4[Dispatch] --> N5[Fill aggregation] --> N6[Reconciliation evidence]
-```
-
-## 📥 Входы
-
-- approved intent;
-- venue credentials refs;
-- quotes/depth;
-- fees;
-- position state;
-- execution policy;
-
-## 📤 Выходы
-
-- execution plan;
-- venue child orders;
-- fill events;
-- partial/unfilled state;
-- reconciliation package;
-
-## 🛡️ Непереговорные инварианты
+Главная цепочка:
 
 ```text
-dispatch requires approved intent
-idempotency key mandatory
-retry cannot duplicate economic order
-partial fills preserved explicitly
-reconciliation closes the lifecycle
+risk decision
+→ approved notional
+→ venue ranking
+→ slices
+→ adapters
+→ fills
+→ execution result evidence
 ```
 
-## 🧪 Как ловить ложный GREEN
+## 2. 📦 Фактический состав
 
-- health/API throughput не использовать как доказательство market edge;
-- обязательны timestamp/state-version checks;
-- adversarial/negative fixtures должны проверять отказ;
-- сохранять полный request → decision → execution/evidence trace;
-- live claims отделять от local smoke и simulation;
-- cost/latency/failure assumptions должны быть явными.
+Repository содержит:
 
-## 🔗 Контракт с соседями
+- `core.py`;
+- `api.py`;
+- `synergy_contracts.py`;
+- enterprise auth/audit package;
+- tests;
+- Docker/deploy/loadtests/docs/examples.
 
-- [`synergy_riskguard`](https://github.com/Shtenco/synergy_riskguard)
-- [`synergy_market_graph`](https://github.com/Shtenco/synergy_market_graph)
-- [`synergy_midas_institutional`](https://github.com/Shtenco/synergy_midas_institutional)
-- [`synergy_financial_os`](https://github.com/Shtenco/synergy_financial_os)
+## 3. 🧠 VenueQuote
 
-## 🚀 Следующий доказательный рубеж
+Fields:
 
-1. frozen acceptance fixtures;
-2. negative/adversarial suite;
-3. typed cross-repo schema;
-4. end-to-end trace ID;
-5. rollback/recovery evidence;
-6. documented failure-mode table;
-7. reproducible evidence bundle.
+```text
+venue
+price
+available_notional
+fee_bps
+slippage_bps
+latency_ms
+risk_score
+```
+
+All-in cost:
+
+[
+C_{bps}=
+fee_{bps}+slippage_{bps}+100cdot riskScore
+]
+
+## 4. 🧭 Smart routing
+
+`smart_route(notional,quotes,max_venues=4)`:
+
+1. reject notional <=0;
+2. sort quotes by:
+   - all-in bps ascending;
+   - latency ascending;
+3. keep first max venues;
+4. allocate min(remaining, available_notional);
+5. return slices + unfilled notional.
+
+Это deterministic greedy router, не global optimizer.
+
+## 5. 📦 ExecutionPlan
+
+Plan содержит:
+
+- random correlation id;
+- tuple slices;
+- unfilled notional.
+
+Slice содержит venue/notional/expected price/expected cost bps.
+
+## 6. 🧪 PaperAdapter
+
+`PaperAdapter` возвращает full synthetic fill:
+
+- requested = filled;
+- fixed configured price;
+- fee based on bps;
+- generated paper external id.
+
+Это test/paper adapter. Он **не доказывает broker connectivity**.
+
+## 7. 🔗 Risk gate
+
+```text
+UPSTREAM_CONTRACT_ID = synergy.trading.risk-decision/v1
+PLAN_CONTRACT_ID     = synergy.trading.execution-plan/v1
+RESULT_CONTRACT_ID   = synergy.trading.execution-result/v1
+AUTHORITY            = trade_execution
+```
+
+`plan_from_risk_decision`:
+
+- REJECT/KILL_SWITCH → exception;
+- unknown action → exception;
+- only ALLOW/RESIZE accepted;
+- approved_notional must be >0;
+- route строится только для approved amount.
+
+Это критический authority boundary: TradeMux не должен увеличивать risk-approved notional.
+
+## 8. 📥 Inputs
+
+- canonical risk payload;
+- venue quotes;
+- symbol;
+- side;
+- max venues.
+
+## 9. 📤 Outputs
+
+### Plan payload
+
+- risk event id;
+- correlation id;
+- symbol/side;
+- requested notional;
+- slices;
+- unfilled notional.
+
+### Result payload
+
+- plan event id;
+- requested/filled notional;
+- fills;
+- status;
+- external ids.
+
+## 10. 🛡️ Invariants
+
+```text
+REJECT/KILL_SWITCH -> no plan
+approved_notional <=0 -> no plan
+planned total <= approved notional
+available venue capacity bounds each slice
+paper fill != real fill
+execution plan != execution result
+result != accounting recognition
+```
+
+## 11. ⚠️ Current routing limitations
+
+Greedy cost ranking currently не учитывает в core:
+
+- price direction/side when comparing absolute prices;
+- nonlinear impact;
+- venue minimum order size;
+- partial-fill probabilities;
+- cancel/retry;
+- timeout;
+- venue correlation;
+- smart order timing;
+- dynamic quote decay.
+
+`latency_ms` используется только secondary sort key.
+
+## 12. 🧪 Required execution tests
+
+- slice conservation;
+- unfilled notional;
+- max venues;
+- risk reject;
+- resize cap;
+- zero/negative requested;
+- venue capacity zero;
+- quote stale;
+- partial fill;
+- duplicate external id;
+- retry idempotency;
+- crash recovery;
+- side-aware price quality;
+- fees vs actual fill reconciliation.
+
+## 13. 🔐 Exactly-once / idempotency requirement
+
+Production executor должен связывать:
+
+```text
+risk_event_id
+plan_event_id
+correlation_id
+external_order_id
+fill_id
+```
+
+и не повторять order после uncertain timeout без reconcile.
+
+Current core генерирует correlation UUID, но полноценная persistent idempotency state machine требует отдельного evidence.
+
+## 14. 🛠️ Воспроизводимость
+
+```bash
+git clone https://github.com/Shtenco/synergy_trademux.git
+cd synergy_trademux
+python -m pip install -e .
+pytest -q
+```
+
+## 15. 🗺️ Карта repository
+
+| Path | Role |
+|---|---|
+| `src/.../core.py` | quotes/router/paper adapter |
+| `src/.../synergy_contracts.py` | risk→plan→result contracts |
+| `src/.../api.py` | API |
+| enterprise | auth/audit |
+| tests | execution/product/deploy tests |
+| Docker/deploy/loadtests | ops scaffold |
+
+## 16. 🔗 Место в SYNERGY
+
+```mermaid
+flowchart LR
+    RISK[Canonical risk decision] --> MUX[TradeMux]
+    MUX --> V1[Venue 1]
+    MUX --> V2[Venue 2]
+    MUX --> VN[Venue N]
+    V1 --> RES[Execution result]
+    V2 --> RES
+    VN --> RES
+    RES --> SETTLE[Settlement/accounting consumers]
+```
+
+## 17. 📊 Evidence maturity
+
+| Layer | Status |
+|---|---|
+| risk-gated planning | ✅ |
+| multi-venue slices | ✅ |
+| plan/result payloads | ✅ |
+| paper adapter | ✅ |
+| real broker adapters | not proven by inspected core |
+| persistent idempotency | incomplete |
+| observed real fills | ❌ |
+| cross-repo E2E | ❌ |
+
+## 18. 🚀 Roadmap
+
+1. real adapter evidence;
+2. persistent idempotency/reconcile;
+3. quote timestamps;
+4. side-aware executable cost;
+5. partial-fill state machine;
+6. cancel/replace;
+7. execution TCA;
+8. settlement/accounting linkage;
+9. observed federation run.
+
+## 19. 🛑 Что проект НЕ утверждает
+
+- that PaperAdapter equals broker integration;
+- that cheapest modeled venue yields best actual execution;
+- that execution plan is a fill;
+- that risk-approved means profitable;
+- that source presence proves live deployment.
+
+---
+
+[🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [📚 Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
