@@ -261,6 +261,113 @@ flowchart LR
 - that risk-approved means profitable;
 - that source presence proves live deployment.
 
+## 20. 🔍 Routing properties
+
+A production router should prove conservation properties for every plan.
+
+### Notional conservation
+
+[
+sum_i slice_i + unfilled = approvedNotional
+]
+
+within numeric tolerance.
+
+### Capacity bound
+
+For each venue:
+
+[
+slice_i le availableNotional_i
+]
+
+### Venue-count bound
+
+[
+count(slices)le maxVenues
+]
+
+### Risk bound
+
+Requested execution can never exceed canonical `approved_notional`, even if the caller passes a larger `requested_notional` into a later serializer.
+
+These should be property tests, not assumptions.
+
+## 21. ⚠️ Price-side semantics
+
+Current `smart_route` ranks by modeled bps cost and latency but does not use BUY/SELL side or price improvement when ranking quotes.
+
+For real execution, effective economics differ:
+
+- BUY prefers lower executable price;
+- SELL prefers higher executable price;
+- fees/slippage are then combined with price.
+
+A future all-in comparator must be side-aware and unit-consistent.
+
+## 22. 🔄 Uncertain execution state machine
+
+The dangerous case is:
+
+```text
+send order
+→ network timeout
+→ unknown whether venue accepted
+```
+
+Blind retry can duplicate exposure.
+
+Required states should include:
+
+```text
+PLANNED
+SUBMITTING
+ACKNOWLEDGED
+PARTIALLY_FILLED
+FILLED
+CANCEL_PENDING
+CANCELLED
+UNKNOWN_RECONCILE
+FAILED
+```
+
+and persistent idempotency keys.
+
+## 23. 📋 Execution evidence
+
+Each external fill should preserve:
+
+- venue/order id;
+- client idempotency id;
+- timestamps;
+- requested/filled qty;
+- price;
+- fees;
+- quote snapshot/hash;
+- risk event id;
+- plan id;
+- reconciliation state.
+
+Only after external receipt reconciliation may settlement/accounting consume the result.
+
+## 24. 📊 Transaction-cost analysis
+
+For each plan compare:
+
+[
+ImplementationShortfall
+=
+ActualFillValue
+-
+DecisionBenchmarkValue
+]
+
+plus fees, latency and opportunity cost. This is necessary to determine whether modeled routing ranking actually improves execution.
+
+## 25. ✅ Promotion gate
+
+Real E2E status requires at least one non-paper adapter observed under replay/idempotency tests, exact risk→plan→fill evidence, and downstream settlement reconciliation. PaperAdapter alone is intentionally insufficient.
+
 ---
 
 [🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [📚 Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
