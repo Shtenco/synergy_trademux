@@ -1,10 +1,10 @@
-# 🔀 SYNERGY TradeMux — verified technical dossier
+#  SYNERGY TradeMux — verified technical dossier
 
-> **Статус:** 🟡 CANDIDATE execution-planning layer.
+> **Статус:**  CANDIDATE execution-planning layer.
 > **Проверено по фактическому `main`:** 29.09.2026.
 > **Authority:** trade execution boundary, но real broker fills не выводятся из paper adapter.
 
-## 1. 🎯 Задача
+## 1.  Задача
 
 TradeMux получает canonical risk decision и строит bounded multi-venue execution plan по costs, latency и available notional.
 
@@ -20,7 +20,7 @@ risk decision
 → execution result evidence
 ```
 
-## 2. 📦 Фактический состав
+## 2.  Фактический состав
 
 Repository содержит:
 
@@ -31,7 +31,7 @@ Repository содержит:
 - tests;
 - Docker/deploy/loadtests/docs/examples.
 
-## 3. 🧠 VenueQuote
+## 3.  VenueQuote
 
 Fields:
 
@@ -52,7 +52,7 @@ C_{bps}=
 fee_{bps}+slippage_{bps}+100cdot riskScore
 ]
 
-## 4. 🧭 Smart routing
+## 4.  Smart routing
 
 `smart_route(notional,quotes,max_venues=4)`:
 
@@ -66,7 +66,7 @@ fee_{bps}+slippage_{bps}+100cdot riskScore
 
 Это deterministic greedy router, не global optimizer.
 
-## 5. 📦 ExecutionPlan
+## 5.  ExecutionPlan
 
 Plan содержит:
 
@@ -76,7 +76,7 @@ Plan содержит:
 
 Slice содержит venue/notional/expected price/expected cost bps.
 
-## 6. 🧪 PaperAdapter
+## 6.  PaperAdapter
 
 `PaperAdapter` возвращает full synthetic fill:
 
@@ -87,7 +87,7 @@ Slice содержит venue/notional/expected price/expected cost bps.
 
 Это test/paper adapter. Он **не доказывает broker connectivity**.
 
-## 7. 🔗 Risk gate
+## 7.  Risk gate
 
 ```text
 UPSTREAM_CONTRACT_ID = synergy.trading.risk-decision/v1
@@ -106,7 +106,7 @@ AUTHORITY            = trade_execution
 
 Это критический authority boundary: TradeMux не должен увеличивать risk-approved notional.
 
-## 8. 📥 Inputs
+## 8.  Inputs
 
 - canonical risk payload;
 - venue quotes;
@@ -114,7 +114,7 @@ AUTHORITY            = trade_execution
 - side;
 - max venues.
 
-## 9. 📤 Outputs
+## 9.  Outputs
 
 ### Plan payload
 
@@ -133,7 +133,7 @@ AUTHORITY            = trade_execution
 - status;
 - external ids.
 
-## 10. 🛡️ Invariants
+## 10.  Invariants
 
 ```text
 REJECT/KILL_SWITCH -> no plan
@@ -145,7 +145,7 @@ execution plan != execution result
 result != accounting recognition
 ```
 
-## 11. ⚠️ Current routing limitations
+## 11.  Current routing limitations
 
 Greedy cost ranking currently не учитывает в core:
 
@@ -161,7 +161,7 @@ Greedy cost ranking currently не учитывает в core:
 
 `latency_ms` используется только secondary sort key.
 
-## 12. 🧪 Required execution tests
+## 12.  Required execution tests
 
 - slice conservation;
 - unfilled notional;
@@ -178,7 +178,7 @@ Greedy cost ranking currently не учитывает в core:
 - side-aware price quality;
 - fees vs actual fill reconciliation.
 
-## 13. 🔐 Exactly-once / idempotency requirement
+## 13.  Exactly-once / idempotency requirement
 
 Production executor должен связывать:
 
@@ -194,7 +194,7 @@ fill_id
 
 Current core генерирует correlation UUID, но полноценная persistent idempotency state machine требует отдельного evidence.
 
-## 14. 🛠️ Воспроизводимость
+## 14.  Воспроизводимость
 
 ```bash
 git clone https://github.com/Shtenco/synergy_trademux.git
@@ -203,7 +203,7 @@ python -m pip install -e .
 pytest -q
 ```
 
-## 15. 🗺️ Карта repository
+## 15.  Карта repository
 
 | Path | Role |
 |---|---|
@@ -214,7 +214,7 @@ pytest -q
 | tests | execution/product/deploy tests |
 | Docker/deploy/loadtests | ops scaffold |
 
-## 16. 🔗 Место в SYNERGY
+## 16.  Место в SYNERGY
 
 ```mermaid
 flowchart LR
@@ -228,20 +228,20 @@ flowchart LR
     RES --> SETTLE[Settlement/accounting consumers]
 ```
 
-## 17. 📊 Evidence maturity
+## 17.  Evidence maturity
 
 | Layer | Status |
 |---|---|
-| risk-gated planning | ✅ |
-| multi-venue slices | ✅ |
-| plan/result payloads | ✅ |
-| paper adapter | ✅ |
+| risk-gated planning |  |
+| multi-venue slices |  |
+| plan/result payloads |  |
+| paper adapter |  |
 | real broker adapters | not proven by inspected core |
 | persistent idempotency | incomplete |
-| observed real fills | ❌ |
-| cross-repo E2E | ❌ |
+| observed real fills |  |
+| cross-repo E2E |  |
 
-## 18. 🚀 Roadmap
+## 18.  Roadmap
 
 1. real adapter evidence;
 2. persistent idempotency/reconcile;
@@ -253,7 +253,7 @@ flowchart LR
 8. settlement/accounting linkage;
 9. observed federation run.
 
-## 19. 🛑 Что проект НЕ утверждает
+## 19.  Что проект НЕ утверждает
 
 - that PaperAdapter equals broker integration;
 - that cheapest modeled venue yields best actual execution;
@@ -261,7 +261,7 @@ flowchart LR
 - that risk-approved means profitable;
 - that source presence proves live deployment.
 
-## 20. 🔍 Routing properties
+## 20.  Routing properties
 
 A production router should prove conservation properties for every plan.
 
@@ -293,7 +293,7 @@ Requested execution can never exceed canonical `approved_notional`, even if the 
 
 These should be property tests, not assumptions.
 
-## 21. ⚠️ Price-side semantics
+## 21.  Price-side semantics
 
 Current `smart_route` ranks by modeled bps cost and latency but does not use BUY/SELL side or price improvement when ranking quotes.
 
@@ -305,7 +305,7 @@ For real execution, effective economics differ:
 
 A future all-in comparator must be side-aware and unit-consistent.
 
-## 22. 🔄 Uncertain execution state machine
+## 22.  Uncertain execution state machine
 
 The dangerous case is:
 
@@ -333,7 +333,7 @@ FAILED
 
 and persistent idempotency keys.
 
-## 23. 📋 Execution evidence
+## 23.  Execution evidence
 
 Each external fill should preserve:
 
@@ -350,7 +350,7 @@ Each external fill should preserve:
 
 Only after external receipt reconciliation may settlement/accounting consume the result.
 
-## 24. 📊 Transaction-cost analysis
+## 24.  Transaction-cost analysis
 
 For each plan compare:
 
@@ -364,10 +364,10 @@ DecisionBenchmarkValue
 
 plus fees, latency and opportunity cost. This is necessary to determine whether modeled routing ranking actually improves execution.
 
-## 25. ✅ Promotion gate
+## 25.  Promotion gate
 
 Real E2E status requires at least one non-paper adapter observed under replay/idempotency tests, exact risk→plan→fill evidence, and downstream settlement reconciliation. PaperAdapter alone is intentionally insufficient.
 
 ---
 
-[🧭 SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [📚 Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
+[ SYNERGY SYSTEM](https://github.com/Shtenco/synergy_system) · [ Atlas](https://github.com/Shtenco/synergy_system/blob/main/docs/SYNERGY_REPOSITORY_ATLAS.md)
